@@ -116,3 +116,45 @@ def test_get_jobs():
     data = response.json()
 
     assert isinstance(data, list)
+    
+from app.slo.evaluator import evaluate_slo
+from app.slo.gate import should_rollback
+
+
+def test_slo_passes_when_metrics_are_within_thresholds():
+    result = evaluate_slo(
+        error_rate=0.005,
+        p95_latency_ms=250
+    )
+
+    assert result["error_rate_pass"] is True
+    assert result["latency_pass"] is True
+    assert result["slo_pass"] is True
+
+
+def test_slo_fails_when_error_rate_exceeds_threshold():
+    result = evaluate_slo(
+        error_rate=0.02,
+        p95_latency_ms=250
+    )
+
+    assert result["error_rate_pass"] is False
+    assert result["latency_pass"] is True
+    assert result["slo_pass"] is False
+
+
+def test_slo_fails_when_latency_exceeds_threshold():
+    result = evaluate_slo(
+        error_rate=0.005,
+        p95_latency_ms=350
+    )
+
+    assert result["error_rate_pass"] is True
+    assert result["latency_pass"] is False
+    assert result["slo_pass"] is False
+
+
+def test_rollback_requires_two_consecutive_failures():
+    assert should_rollback(1) is False
+    assert should_rollback(2) is True
+    assert should_rollback(3) is True
