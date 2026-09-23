@@ -1,0 +1,20 @@
+from prometheus_client import Counter, Histogram
+
+
+REQUEST_COUNT = Counter(
+    "http_requests_total",
+    "Total number of HTTP requests",
+    ["method", "path", "status"],
+)
+
+REQUEST_ERROR_COUNT = Counter(
+    "http_request_errors_total",
+    "Total number of HTTP requests returning an error",
+    ["method", "path", "status"],
+)
+
+REQUEST_LATENCY = Histogram(
+    "http_request_latency_seconds",
+    "HTTP request latency in seconds",
+    ["method", "path"],
+)

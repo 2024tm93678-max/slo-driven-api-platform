@@ -158,3 +158,10 @@ def test_rollback_requires_two_consecutive_failures():
     assert should_rollback(1) is False
     assert should_rollback(2) is True
     assert should_rollback(3) is True
+    
+def test_metrics_endpoint():
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert "http_requests_total" in response.text
+    assert "http_request_latency_seconds" in response.text
