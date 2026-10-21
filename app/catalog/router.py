@@ -1,3 +1,5 @@
+import time
+
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
@@ -11,6 +13,10 @@ class Product(BaseModel):
     name: str = Field(min_length=1)
     price: float = Field(gt=0)
 
+@router.get("/slow")
+def get_slow_products():
+    time.sleep(0.4)
+    return get_products()
 
 @router.get("")
 def get_all_products():

@@ -2,10 +2,13 @@ import time
 
 import httpx
 
+from app.slo.evaluator import evaluate_slo
+
 
 def run_workload(
     base_url: str,
     request_count: int = 20,
+    path: str = "/health",
 ) -> dict:
     success_count = 0
     error_count = 0
@@ -15,7 +18,7 @@ def run_workload(
         for _ in range(request_count):
             start_time = time.perf_counter()
 
-            response = client.get("/health")
+            response = client.get(path)
 
             elapsed_ms = (time.perf_counter() - start_time) * 1000
             latencies_ms.append(elapsed_ms)
@@ -36,10 +39,16 @@ def run_workload(
 
     error_rate = error_count / request_count
 
+    slo_result = evaluate_slo(
+        error_rate=error_rate,
+        p95_latency_ms=p95_latency_ms,
+    )
+
     return {
         "request_count": request_count,
         "success_count": success_count,
         "error_count": error_count,
         "error_rate": error_rate,
         "p95_latency_ms": p95_latency_ms,
+        "slo_pass": slo_result["slo_pass"],
     }
